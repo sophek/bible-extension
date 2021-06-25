@@ -1,0 +1,16 @@
+{
+    "name": "Hello World",
+    "description": "Hello World Chrome extenstion",
+    "version": "1.0",
+    "manifest_version": 3,
+    "permissions": [
+        "tabs"
+    ],
+    "chrome_url_overrides": {
+        "newtab": "index.html"
+    },
+    "action": {
+        "default_icon": {}
+    },
+    "icons": {}
+}

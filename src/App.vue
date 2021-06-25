@@ -1,26 +1,56 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div class="wrapper">
+    <div>
+      <Clock />
+      <Bible />
+      <FlashCard />
+    </div>
+  </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import Clock from "./components/Clock.vue";
+import Bible from "./components/Bible.vue";
+import FlashCard from "./components/FlashCard.vue";
 export default {
-  name: 'App',
+  name: "App",
   components: {
-    HelloWorld
-  }
-}
+    Clock,
+    Bible,
+    FlashCard,
+  },
+  setup() {
+    return {};
+  },
+};
 </script>
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  height:100vh;
 }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  .wrapper {
+    text-align: center;
+    margin: auto;
+    display: block;
+    color: white;
+    background-color: #00000096;
+    width: 100%;
+    height: 100%;
+  }
+  
+  body {
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+    background-image: url(https://source.unsplash.com/random?nature);
+    background-size: cover;
+    background-color: black;
+    background-repeat: no-repeat;
+    
+  }
 </style>

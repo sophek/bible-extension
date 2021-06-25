@@ -1,4 +1,16 @@
 import { createApp } from 'vue'
+import debounce from './directives/debouncer'
 import App from './App.vue'
 
-createApp(App).mount('#app')
+import Unicon from 'vue-unicons'
+import { uniHeart, uniClipboard } from 'vue-unicons/dist/icons'
+
+Unicon.add([uniHeart, uniClipboard])
+
+//defining the directive
+const app = createApp(App)
+
+//defining the directive
+app.directive('debounce', (el, binding) => debounce(el, binding))
+app.use(Unicon)
+app.mount('#app')
