@@ -31,34 +31,7 @@
         <ul class="verse">
           <li :key="idx" v-for="(v, idx) in result">
             <div>
-              <button @click="addFavorite(v.book, v.chapter, v.verse, v.verse)">
-                <unicon
-                  :key="idx"
-                  style="cursor: pointer"
-                  name="heart"
-                  fill="red"
-                ></unicon>
-              </button>
-              <unicon
-                style="cursor: pointer"
-                name="clipboard"
-                fill="red"
-                @click="
-                  copy(v.book + ' ' + v.chapter + ':' + v.verse + ' ' + v.text)
-                "
-              ></unicon>
-              <span style="cursor: copy">
-                {{ v.book }} {{ v.chapter }} : {{ v.verse }}</span
-              >
-
-              <div
-                v-html="
-                  v.text.replace(
-                    q.toLowerCase(),
-                    `<span style=color:yellow>${q}</span>`
-                  )
-                "
-              ></div>
+              <Verse :data="v" :q="q" />
             </div>
           </li>
         </ul>
@@ -72,8 +45,13 @@ import BibleBook from "./../assets/BibleBook";
 import { ref, computed } from "vue";
 import useClipboard from "./../../node_modules/vue-clipboard3";
 import db from "./../mydatabase";
+import Verse from "./Verse.vue";
+
 export default {
   name: "Bible",
+  components: {
+    Verse,
+  },
   setup() {
     const verse = ref("");
     const book = ref("");
@@ -213,7 +191,6 @@ export default {
     };
     const copy = async (text) => {
       try {
-        console.log("Copied to clipboard");
         await toClipboard(text);
       } catch (e) {
         console.error(e);
@@ -222,7 +199,6 @@ export default {
     const copyRange = async () => {
       try {
         let rangeTextData = "";
-        console.log("copy range");
         result.value.map((item) => {
           rangeTextData += item.full + "\n";
         });
@@ -292,6 +268,8 @@ export default {
 };
 </script>
 <style scoped>
+
+ 
   .greet {
     font-size: 2.5rem;
     font-weight: 400;
