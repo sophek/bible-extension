@@ -31,7 +31,12 @@
         <ul class="verse">
           <li :key="idx" v-for="(v, idx) in result">
             <div>
-              <Verse :data="v" :q="q" />
+              <Verse
+                :data="v"
+                :q="q"
+                @favorite="updateFavorite"
+                @copy="copyFrom"
+              />
             </div>
           </li>
         </ul>
@@ -179,6 +184,15 @@ export default {
     loadBibleVerse();
 
     // Logic to add favorite, copy etc
+
+    const updateFavorite = (e) => {
+      addFavorite(e.book, e.chapter, e.startVerse, e.endVerse);
+    };
+
+    const copyFrom = (e) => {
+      copy(e);
+    };
+
     const addFavorite = async (book, chapter, start_verse, end_verse) => {
       var id = await db.favorites.put({
         book: book,
@@ -260,9 +274,11 @@ export default {
       bibleRef,
       type,
       copy,
+      copyFrom,
       rangeText,
       copyRange,
       addFavorite,
+      updateFavorite,
     };
   },
 };
