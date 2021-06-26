@@ -51,13 +51,14 @@ import { ref, computed } from "vue";
 import useClipboard from "./../../node_modules/vue-clipboard3";
 import db from "./../mydatabase";
 import Verse from "./Verse.vue";
-
+import { randomNumber, sortBy } from "./../helper";
 export default {
   name: "Bible",
   components: {
     Verse,
   },
   setup() {
+    const { toClipboard } = useClipboard();
     const verse = ref("");
     const book = ref("");
     const chapter = ref("");
@@ -65,28 +66,7 @@ export default {
     const q = ref("");
     const type = ref("verse");
     const rangeText = ref("");
-    const { toClipboard } = useClipboard();
-
-    // Helpers
-    const randomNumber = (min, max) => {
-      return Math.floor(Math.random() * (max - min) + min);
-    };
-
-    const sort_by = (field, reverse, primer) => {
-      const key = primer
-        ? function (x) {
-            return primer(x[field]);
-          }
-        : function (x) {
-            return x[field];
-          };
-
-      reverse = !reverse ? 1 : -1;
-
-      return function (a, b) {
-        return (a = key(a)), (b = key(b)), reverse * ((a > b) - (b > a));
-      };
-    };
+    const favorites = ref([]);
 
     const importBookOfBible = async (bookName) => {
       let book = await import(`./../assets/${bookName}`);
@@ -125,7 +105,7 @@ export default {
       );
 
       let AllBooks = wholeBible
-        .sort(sort_by("id", false, (a) => a))
+        .sort(sortBy("id", false, (a) => a))
         .map((book) => {
           return book.chapters.flatMap((chap) => {
             return chap.verses.map((item) => {
@@ -179,18 +159,26 @@ export default {
         .filter((verse) => verse.verse >= range[0] && verse.verse <= range[1]);
     };
 
+    const getMyFavorites = async () => {
+      let favs = await db.favorites.toArray();
+      favorites.value = favs.map((item) => {
+        return {
+          book: item.book,
+          chapter: Number(item.chapter),
+          verse: Number(item.start_verse),
+        };
+      });
+    };
+
     // The order of these function are import because searchBible loads all the books first
     searchBible();
     loadBibleVerse();
+    getMyFavorites();
 
     // Logic to add favorite, copy etc
 
     const updateFavorite = (e) => {
       addFavorite(e.book, e.chapter, e.startVerse, e.endVerse);
-    };
-
-    const copyFrom = (e) => {
-      copy(e);
     };
 
     const addFavorite = async (book, chapter, start_verse, end_verse) => {
@@ -200,9 +188,28 @@ export default {
         start_verse: start_verse,
         end_verse: end_verse,
       });
-      console.log("Got id ", id);
-      console.log("Done.", book, chapter, start_verse, end_verse);
+      if (id) {
+        getMyFavorites();
+      }
     };
+
+    const displayFavorites = (result1, result2) => {
+      return result1.map((o1) => {
+        const isFavorite = result2.some(function (o2) {
+          const isFav =
+            o1.verse === o2.verse &&
+            o1.book === o2.book &&
+            o1.chapter === o2.chapter;
+          return isFav;
+        });
+        return { ...o1, fav: isFavorite };
+      });
+    };
+
+    const copyFrom = (e) => {
+      copy(e);
+    };
+
     const copy = async (text) => {
       try {
         await toClipboard(text);
@@ -210,6 +217,7 @@ export default {
         console.error(e);
       }
     };
+
     const copyRange = async () => {
       try {
         let rangeTextData = "";
@@ -226,6 +234,7 @@ export default {
     // End logic
 
     // computed Search result
+
     const result = computed(() => {
       if (q.value === "") {
         return [];
@@ -262,8 +271,29 @@ export default {
         //rangeText.value = byBookResult;
       }
 
-      return type.value === "verse" ? byVerseResult : byBookResult;
+      let rs = type.value === "verse" ? byVerseResult : byBookResult;
+
+      let cleanFavorites = favorites.value.map((item) => {
+        return {
+          book: item.book,
+          chapter: Number(item.chapter),
+          verse: item.verse,
+        };
+      });
+      let cleanResult = rs.map((item) => {
+        return {
+          book: item.book,
+          chapter: Number(item.chapter),
+          verse: Number(item.verse),
+          text: item.text,
+          full: item.full,
+        };
+      });
+
+      return displayFavorites(cleanResult, cleanFavorites);
     });
+
+    //console.log(displayFavorites(result,favorites.value,[]))
 
     return {
       verse,
@@ -279,6 +309,7 @@ export default {
       copyRange,
       addFavorite,
       updateFavorite,
+      favorites,
     };
   },
 };

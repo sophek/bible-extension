@@ -12,7 +12,11 @@
             class="button"
             :class="toggleButtons ? 'show' : 'hide'"
           >
-            <unicon style="cursor: pointer" name="heart" fill="white"></unicon>
+            <unicon
+              style="cursor: pointer"
+              name="heart"
+              :fill="data.fav ? 'red' : 'white'"
+            ></unicon>
           </button>
           <button
             @click="copyVerse(data.full)"
@@ -22,7 +26,7 @@
             <unicon
               style="cursor: pointer"
               name="clipboard"
-              fill="red"
+              fill="white"
             ></unicon>
           </button> </span
         >&nbsp;&nbsp;
