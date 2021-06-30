@@ -1,44 +1,44 @@
 <template>
-  <div>
-    <h1 class="time">{{ dateTimeStr }}</h1>
-    <h3 class="greet">{{ greeting }}</h3>
+  <div id="clock">
+    <p class="date">{{ date }}</p>
+    <p class="time">{{ greetAndConvertTime(time) }}</p>
   </div>
 </template>
 
 <script>
-import { ref, onBeforeMount, onBeforeUnmount } from "vue";
-const date = new Date();
+import { ref } from "vue";
 export default {
   name: "Clock",
   setup() {
-    const dateTimeStr = ref("00:00:00");
-    const greeting = ref("Good");
-    const dateTime = ref({
-      hours: date.getHours(),
-      minutes: date.getMinutes(),
-      seconds: date.getSeconds(),
-    });
+    const time = ref("");
+    const date = ref("");
+    var week = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+    setInterval(updateTime, 1000);
+    function updateTime() {
+      var cd = new Date();
+      time.value =
+        zeroPadding(cd.getHours(), 2) +
+        ":" +
+        zeroPadding(cd.getMinutes(), 2) +
+        ":" +
+        zeroPadding(cd.getSeconds(), 2);
+      date.value =
+        zeroPadding(cd.getFullYear(), 4) +
+        "-" +
+        zeroPadding(cd.getMonth() + 1, 2) +
+        "-" +
+        zeroPadding(cd.getDate(), 2) +
+        " " +
+        week[cd.getDay()];
+    }
 
-    const timer = ref(undefined);
-
-    const setDateTime = () => {
-      const date = new Date();
-      dateTime.value = {
-        hours: date.getHours(),
-        minutes: date.getMinutes(),
-        seconds: date.getSeconds(),
-      };
-
-      let minutesStr = date.getMinutes().toString();
-      let hourStr = date.getHours().toString();
-
-      let minutes = minutesStr.length === 1 ? "0" + minutesStr : minutesStr;
-
-      let hour = hourStr.length === 1 ? "0" + hourStr : hourStr;
-
-      let finalTime = `${hour}:${minutes}`;
-      greetAndConvertTime(finalTime);
-    };
+    function zeroPadding(num, digit) {
+      var zero = "";
+      for (var i = 0; i < digit; i++) {
+        zero += "0";
+      }
+      return (zero + num).slice(-digit);
+    }
 
     const greetAndConvertTime = (time) => {
       // Check correct time format and split into components
@@ -52,40 +52,44 @@ export default {
 
         time[5] = +time[0] < 12 ? " AM" : " PM"; // Set AM/PM
         time[0] = +time[0] % 12 || 12; // Adjust hours
-
-        if (time[5] === " AM") {
-          greeting.value = " Good morning";
-        } else if (time[5] === " PM" && time[5] <= 6) {
-          greeting.value = " Good afternoon";
-        } else if (time[0] >= 6 && time[5] === " PM") {
-          greeting.value = " Good evening";
-        }
       }
 
-      dateTimeStr.value = time.join("");
+      time[0] = zeroPadding(time[0], 2);
+
+      return time.join("");
     };
 
-    onBeforeMount(() => {
-      timer.value = setInterval(setDateTime, 1000);
-    });
-
-    onBeforeUnmount(() => {
-      clearInterval(timer.value);
-    });
-
-    return { greetAndConvertTime, dateTimeStr, greeting };
+    return {
+      time,
+      date,
+      greetAndConvertTime,
+    };
   },
 };
 </script>
 <style scoped>
-  .time {
-    font-size: 8rem;
-    font-weight: 600;
-    margin-bottom: 4px;
-  }
-  .greet {
-    font-size: 2.5rem;
-    font-weight: 400;
-    text-shadow: #CCC 1px 0 10px; 
-  }
+  #clock {
+  font-family: "Share Tech Mono", monospace;
+  color: #ffffff;
+  text-align: center;
+  position: relative;
+  left: 40%;
+  top: -40px;
+  color: #daf6ff;
+  text-shadow: 0 0 20px #0aafe6, 0 0 20px rgba(10, 175, 230, 0);
+}
+#clock .time {
+  letter-spacing: 0.05em;
+  font-size: 30px;
+  padding: 5px 0;
+}
+#clock .date {
+  letter-spacing: 0.1em;
+  font-size: 24px;
+}
+#clock .text {
+  letter-spacing: 0.1em;
+  font-size: 12px;
+  padding: 20px 0 0;
+}
 </style>

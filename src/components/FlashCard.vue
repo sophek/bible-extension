@@ -2,15 +2,12 @@
   <div class="flip-card">
     <div class="flip-card-inner">
       <div class="flip-card-front">
-        <h1>John 3:16</h1>
+        <slot name="verse"></slot>
       </div>
       <div class="flip-card-back">
-        <h1>John Doe</h1>
-        <p>Architect & Engineer</p>
-        <p>We love that guy</p>
+        <slot name="body"></slot>
       </div>
     </div>
-    <div><button>yes</button></div>
   </div>
 </template>
 <script>
@@ -23,8 +20,7 @@ export default {
 .flip-card {
   background-color: transparent;
   width: 250px;
-  height: 400px;
-  border: 1px solid #f1f1f1;
+  height: 300px;
   perspective: 1000px; /* Remove this if you don't want the 3D effect */
 }
 
@@ -54,13 +50,11 @@ export default {
 
 /* Style the front side (fallback if image is missing) */
 .flip-card-front {
-  background-color: #bbb;
   color: black;
 }
 
 /* Style the back side */
 .flip-card-back {
-  background-color: dodgerblue;
   color: white;
   transform: rotateY(180deg);
 }

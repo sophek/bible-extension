@@ -22,11 +22,11 @@
       &nbsp;&nbsp;
 
       <button @click="copyRange" class="result-btn">Copy Results</button>
-      <h3 class="greet" v-if="result.length === 0">
+      <h3 class="greet hi-lite" v-if="result.length === 0">
         {{ book }} {{ chapter }} : {{ verse.verse }} - {{ verse.text }}
       </h3>
       <div
-        style="height: 400px; display: block; overflow-y: scroll; padding: 20px"
+        style="height: 500px; display: block; overflow-y: scroll; padding: 20px"
       >
         <ul class="verse">
           <li :key="idx" v-for="(v, idx) in result">
@@ -47,7 +47,7 @@
 
 <script>
 import BibleBook from "./../assets/BibleBook";
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import useClipboard from "./../../node_modules/vue-clipboard3";
 import db from "./../mydatabase";
 import Verse from "./Verse.vue";
@@ -57,7 +57,7 @@ export default {
   components: {
     Verse,
   },
-  setup() {
+  setup(props, { emit }) {
     const { toClipboard } = useClipboard();
     const verse = ref("");
     const book = ref("");
@@ -166,9 +166,17 @@ export default {
           book: item.book,
           chapter: Number(item.chapter),
           verse: Number(item.start_verse),
+          text: item.text,
         };
       });
     };
+
+    watch(favorites, (newValue) => {
+      let uniqueArray = Array.from(new Set(newValue.map(JSON.stringify))).map(
+        JSON.parse
+      );
+      emit("getfavorites", uniqueArray);
+    });
 
     // The order of these function are import because searchBible loads all the books first
     searchBible();
@@ -178,15 +186,16 @@ export default {
     // Logic to add favorite, copy etc
 
     const updateFavorite = (e) => {
-      addFavorite(e.book, e.chapter, e.startVerse, e.endVerse);
+      addFavorite(e.book, e.chapter, e.startVerse, e.endVerse, e.text);
     };
 
-    const addFavorite = async (book, chapter, start_verse, end_verse) => {
+    const addFavorite = async (book, chapter, start_verse, end_verse, text) => {
       var id = await db.favorites.put({
         book: book,
         chapter: chapter,
         start_verse: start_verse,
         end_verse: end_verse,
+        text: text,
       });
       if (id) {
         getMyFavorites();
@@ -240,17 +249,27 @@ export default {
         return [];
       }
 
+      let quotedSearch = q.value.match(/".*?"/g);
+
+      if (quotedSearch && quotedSearch.toString().includes('""')) {
+        return [];
+      }
+
       //checking if the length is greater than 0
       //if so, filter through the whole record set and split by each word and match against the search term
       let byVerseResult =
         bibleRef.value.length > 0
-          ? bibleRef.value.filter((item) =>
-              item.text
+          ? bibleRef.value.filter((item) => {
+              let searchByWord = item.text
                 .toLowerCase()
                 .split(" ")
                 .map((i) => i.replace(/\W/g, ""))
-                .includes(q.value.toLowerCase())
-            )
+                .includes(q.value.toLowerCase());
+              let searchByPhrase = item.text
+                .toLowerCase()
+                .includes(q.value.toLowerCase().replaceAll('"', "").trim());
+              return quotedSearch ? searchByPhrase : searchByWord;
+            })
           : [];
 
       let byBookResult =
@@ -278,6 +297,7 @@ export default {
           book: item.book,
           chapter: Number(item.chapter),
           verse: item.verse,
+          text: item.text,
         };
       });
       let cleanResult = rs.map((item) => {
@@ -289,8 +309,8 @@ export default {
           full: item.full,
         };
       });
-
-      return displayFavorites(cleanResult, cleanFavorites);
+      let resultData = displayFavorites(cleanResult, cleanFavorites);
+      return resultData;
     });
 
     //console.log(displayFavorites(result,favorites.value,[]))
@@ -318,9 +338,9 @@ export default {
 
  
   .greet {
-    font-size: 2.5rem;
+    font-size: 2.0rem;
     font-weight: 400;
-    text-shadow: #CCC 1px 0 10px; 
+    text-shadow: 0 0 20px #0aafe6, 0 0 20px rgba(10, 175, 230, 0);
   }
 ul.verse {
     text-align: left;

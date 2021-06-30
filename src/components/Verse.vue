@@ -7,11 +7,7 @@
           @mouseover="toggleButtons = true"
           @mouseout="toggleButtons = false"
           >{{ data.book }} {{ data.chapter }} : {{ data.verse }}
-          <button
-            @click="toggleFavorite(data)"
-            class="button"
-            :class="toggleButtons ? 'show' : 'hide'"
-          >
+          <button @click="toggleFavorite(data)" class="button">
             <unicon
               style="cursor: pointer"
               name="heart"
@@ -59,6 +55,7 @@ export default {
         chapter: verseData.chapter,
         startVerse: verseData.verse,
         endVerse: verseData.verse,
+        text: verseData.text,
       });
     };
 
@@ -67,9 +64,10 @@ export default {
     };
 
     const verse = computed(() => {
+      let searchedQ = props.q.toLowerCase().replaceAll('"', "").trim();
       return props.data.text.replace(
-        props.q.toLowerCase(),
-        `<span style=color:yellow>${props.q}</span>`
+        searchedQ,
+        `<span style=color:yellow>${searchedQ}</span>`
       );
     });
 

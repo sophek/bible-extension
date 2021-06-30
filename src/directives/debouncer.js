@@ -22,6 +22,9 @@ function debouncer(fn, delay) {
   it has a default timeout of 500 milliseconds
 */
 module.exports = function debounce(el, binding) {
+    if (binding.value === "") {
+        return
+    }
     if (binding.value !== binding.oldValue) {
         el.oninput = debouncer(function () {
             el.dispatchEvent(new Event('change'))
