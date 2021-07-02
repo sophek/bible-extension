@@ -8,9 +8,21 @@
         placeholder="Search the whole KJV Bible..."
         style="margin-top: 50px; width: 90%"
       />
-      <h1 class="badge">{{ result.length }}</h1>
     </div>
 
+    <div
+      v-if="type === 'book'"
+      style="display: flex; flex-wrap: wrap; margin-top: 20px"
+    >
+      <span
+        class="book-tag"
+        @click="q = book.BookName"
+        :key="book.OsisID"
+        v-for="book of BibleBook.bible"
+        >{{ book.BookName }}</span
+      >
+      <span class="book-tag" @click="q = ''">Clear</span>
+    </div>
     <div style="margin-top: 10px; padding: 20px">
       <input type="radio" name="type" value="book" v-model="type" /><span
         >&nbsp;By Books</span
@@ -20,11 +32,25 @@
         >&nbsp;By Words</span
       >
       &nbsp;&nbsp;
-
-      <button @click="copyRange" class="result-btn">Copy Results</button>
+      <button @click="reloadRandomVerse" class="result-btn">Random Verse</button
+      >&nbsp;&nbsp;
+      <button @click="copyRange" class="result-btn">
+        Copy {{ result.length }} Results
+      </button>
       <h3 class="greet hi-lite" v-if="result.length === 0">
         {{ book }} {{ chapter }} : {{ verse.verse }} - {{ verse.text }}
       </h3>
+      <br />
+      <button class="button-transparent">
+        <unicon style="cursor: pointer" name="heart" fill="white"></unicon>
+      </button>
+      <button class="button-transparent">
+        <unicon style="cursor: pointer" name="bright" fill="white"></unicon>
+      </button>
+      <button class="button-transparent">
+        <unicon style="cursor: pointer" name="cloud" fill="white"></unicon>
+      </button>
+
       <div
         style="height: 500px; display: block; overflow-y: scroll; padding: 20px"
       >
@@ -74,7 +100,7 @@ export default {
     };
 
     // Main logic to load the books of the bible from all the json files
-    const loadBibleVerse = async () => {
+    const loadRandomBibleVerse = async () => {
       const randomBookOfTheDay = randomNumber(1, 66);
       let bookMeta = BibleBook.bible.find(
         (book) => book.BookID === randomBookOfTheDay
@@ -92,6 +118,11 @@ export default {
       book.value = bookMeta.BookName;
       chapter.value = randomChapter + 1;
       verse.value = bible.chapters[randomChapter].verses[randomVerse];
+    };
+
+    const reloadRandomVerse = () => {
+      console.log("reloadRandomVerse");
+      loadRandomBibleVerse();
     };
 
     const searchBible = async () => {
@@ -125,38 +156,121 @@ export default {
     const getVerseRange = (q) => {
       let rs = "";
       let data = q.split(" ");
+      let validBook =
+        data[0] === "1" || data[0] === "2" || data[0] === "3"
+          ? `${data[0]} ${data[1]}`
+          : data[0];
+
+      let booksWithMoreThanOne = BibleBook.bible
+        .map((item) => {
+          return { ...item, BookName: item.BookName.toLowerCase() };
+        })
+        .filter((item) => item.BookName.split(" ").length > 1);
+
+      let isMultiple = false;
+
+      if (booksWithMoreThanOne.find((item) => item.BookName === validBook)) {
+        isMultiple = true;
+      }
+
+      const rangeMaker = (isMultiple, data) => {
+        let rangeIndex = isMultiple ? 3 : 2;
+        let fromVerse = 0;
+        let toVerse = 0;
+
+        if (!isMultiple && data.length === 3) {
+          if (data[2].indexOf("-") > -1) {
+            fromVerse = data[rangeIndex].split("-")[0];
+            toVerse = data[rangeIndex].split("-")[1];
+          }
+        }
+
+        if (isMultiple && data.length === 4) {
+          if (data[3].indexOf("-") > -1) {
+            fromVerse = data[rangeIndex].split("-")[0];
+            toVerse = data[rangeIndex].split("-")[1];
+          }
+        }
+        return [fromVerse, toVerse];
+      };
+
       switch (data.length) {
         case 1:
-          rs = { range: [0, 0], q: data[0] };
+          rs = {
+            range: [0, 0],
+            q: data[0],
+            book: validBook,
+            chapter: 0,
+          };
           break;
         case 2:
-          rs = { range: [0, 0], q: `${data[0]} ${data[1]}` };
+          rs = {
+            range: [0, 0],
+            q: `${data[0]} ${data[1]}`,
+            book: validBook,
+            chapter: isMultiple ? 0 : Number(data[1]),
+          };
           break;
         case 3:
           rs = {
-            range: [
-              Number(data[2].split("-")[0]),
-              isNaN(Number(data[2].split("-")[1]))
-                ? Number(data[2].split("-")[0])
-                : Number(data[2].split("-")[1]),
-            ],
-            q: [data[0], data[1]],
+            range: rangeMaker(isMultiple, data),
+            q: `${data[0]} ${data[1]}`,
+            book: validBook,
+            chapter: isMultiple ? Number(data[2]) : Number(data[1]),
           };
           break;
-
+        case 4:
+          rs = {
+            range: rangeMaker(isMultiple, data),
+            q: `${data[0]} ${data[1]}`,
+            book: validBook,
+            chapter: isMultiple ? Number(data[2]) : Number(data[1]),
+          };
+          break;
         default:
           break;
       }
       return rs;
     };
 
-    const getVerseRangeResult = (book, chapterNum, range) => {
-      return bibleRef.value
-        .filter((item) => {
+    const getVerseRangeResult = (range) => {
+      console.log({ range: range });
+      let result = [];
+      let book = range.book;
+      let chapterNum = range.chapter;
+      let fromVerse = range.range[0];
+      let toVerse = range.range[1];
+
+      if (fromVerse === 0 && toVerse === 0 && Number(chapterNum) === 0) {
+        result = bibleRef.value.filter((item) => {
           return item.book.toLowerCase() === book.toLowerCase();
-        })
-        .filter((chapter) => chapter.chapter === chapterNum)
-        .filter((verse) => verse.verse >= range[0] && verse.verse <= range[1]);
+        });
+      } else {
+        if (toVerse === 0) {
+          console.log(book, chapter, fromVerse);
+          result = bibleRef.value
+            .filter((item) => {
+              return item.book.toLowerCase() === book.toLowerCase();
+            })
+            .filter(
+              (chapter) => Number(chapter.chapter) === Number(chapterNum)
+            );
+        } else {
+          console.log(book, chapter, fromVerse, toVerse);
+          result = bibleRef.value
+            .filter((item) => {
+              return item.book.toLowerCase() === book.toLowerCase();
+            })
+            .filter((chapter) => Number(chapter.chapter) === Number(chapterNum))
+            .filter(
+              (verse) =>
+                Number(verse.verse) >= Number(fromVerse) &&
+                Number(verse.verse) <= Number(toVerse)
+            );
+        }
+      }
+
+      return result;
     };
 
     const getMyFavorites = async () => {
@@ -180,7 +294,7 @@ export default {
 
     // The order of these function are import because searchBible loads all the books first
     searchBible();
-    loadBibleVerse();
+    loadRandomBibleVerse();
     getMyFavorites();
 
     // Logic to add favorite, copy etc
@@ -272,23 +386,16 @@ export default {
             })
           : [];
 
-      let byBookResult =
-        bibleRef.value.length > 0
-          ? bibleRef.value.filter((item) =>
-              item.full.toLowerCase().includes(q.value.toLowerCase())
-            )
-          : [];
+      // let byBookResult =
+      //   bibleRef.value.length > 0
+      //     ? bibleRef.value.filter((item) =>
+      //         item.full.toLowerCase().includes(q.value.toLowerCase())
+      //       )
+      //     : [];
 
       let range = getVerseRange(q.value.toLowerCase());
 
-      if (
-        range.range.length === 2 &&
-        range.range[0] > 0 &&
-        range.range[1] > 0
-      ) {
-        byBookResult = getVerseRangeResult(range.q[0], range.q[1], range.range);
-        //rangeText.value = byBookResult;
-      }
+      let byBookResult = getVerseRangeResult(range);
 
       let rs = type.value === "verse" ? byVerseResult : byBookResult;
 
@@ -313,8 +420,6 @@ export default {
       return resultData;
     });
 
-    //console.log(displayFavorites(result,favorites.value,[]))
-
     return {
       verse,
       book,
@@ -330,6 +435,8 @@ export default {
       addFavorite,
       updateFavorite,
       favorites,
+      reloadRandomVerse,
+      BibleBook,
     };
   },
 };
@@ -380,5 +487,25 @@ ul.verse {
     background-color: black;
     color: #fff;
     border: none;
+    cursor:pointer
+  }
+
+  .button-transparent{
+    padding: 11px;
+    border-radius: 20px;
+    background-color: transparent;
+    color: #fff;
+    border: none;
+    cursor:pointer
+  }
+
+  .book-tag{
+    padding: 10px;
+    border-radius: 20px;
+    background-color: black;
+    color: #fff;
+    border: none;
+    cursor:pointer;
+    margin:5px;
   }
 </style>

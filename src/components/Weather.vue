@@ -1,7 +1,7 @@
 <template>
   <div class="weather-today">
     <h1>{{ weatherCurrently.summary }}</h1>
-    <h2>{{ weatherCurrently.temperature }}</h2>
+    <h2>{{ currentTemp }}° F / {{ fahrenheitToCelsius }}° C</h2>
   </div>
   <div style="display: flex">
     <div class="day" :key="day" v-for="day in weatherForecast">
@@ -16,17 +16,33 @@
 </template>
 <script>
 import WeatherDay from "./WeatherDay.vue";
-import { ref } from "vue";
+import { ref, computed, watch } from "vue";
 import axios from "axios";
+//import db from "./../mydatabase";
+
 export default {
   name: "Weather",
   components: {
     WeatherDay,
   },
-  setup() {
+  setup(props, { emit }) {
     const weatherForecast = ref([]);
     const weatherCurrently = ref([]);
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Mon"];
+    const weatherType = (type) => {
+      const types = [
+        { name: "thunderstorm", icon: "mi mi-fw mi-2x mi-thunderstorm-alt" },
+        { name: "partly-cloudy-day", icon: "mi mi-fw mi-2x mi-cloud-sun" },
+        { name: "sunny", icon: "mi mi-fw mi-2x mi-sun" },
+        { name: "rain", icon: "mi mi-fw mi-2x mi-rain" },
+        { name: "heavy-rain", icon: "mi mi-fw mi-2x mi-rain-heavy" },
+        { name: "cloudy", icon: "mi mi-fw mi-2x mi-cloud" },
+      ];
+      return types.find((typ) => typ.name === type)
+        ? types.find((typ) => typ.name === type).icon
+        : "mi mi-fw mi-2x mi-cloud";
+    };
+
     const getWeather = (lat, lon) => {
       const options = {
         method: "GET",
@@ -42,7 +58,6 @@ export default {
       axios
         .request(options)
         .then(function (response) {
-          console.log(response.data);
           weatherCurrently.value = response.data.currently;
           weatherForecast.value = response.data.daily.data.map((item, idx) => {
             return {
@@ -58,7 +73,12 @@ export default {
         });
     };
 
-    const getLocation = () => {
+    watch(weatherCurrently, (newValue) => {
+      console.log("weatherCurrently", newValue);
+      emit("ready", newValue);
+    });
+
+    const getLocationAndWeather = () => {
       const showPosition = (position) => {
         if (position) {
           console.log("position", position);
@@ -72,24 +92,37 @@ export default {
       }
     };
 
-    getLocation();
+    getLocationAndWeather();
 
     console.log({ weatherForecast: weatherForecast });
-    const weatherType = (type) => {
-      const types = [
-        { name: "thunderstorm", icon: "mi mi-fw mi-2x mi-thunderstorm-alt" },
-        { name: "partly-cloudy-day", icon: "mi mi-fw mi-2x mi-cloud-sun" },
-        { name: "sunny", icon: "mi mi-fw mi-2x mi-sun" },
-        { name: "rain", icon: "mi mi-fw mi-2x mi-rain" },
-        { name: "heavy-rain", icon: "mi mi-fw mi-2x mi-rain-heavy" },
-        { name: "cloudy", icon: "mi mi-fw mi-2x mi-cloud" },
-      ];
-      return types.find((typ) => typ.name === type)
-        ? types.find((typ) => typ.name === type).icon
-        : "mi mi-fw mi-2x mi-cloud";
-    };
 
-    return { weatherType, weatherForecast, weatherCurrently };
+    // const saveWeatherByDate = async (data, date) => {
+    //   var id = await db.weather.put({
+    //     data: data,
+    //     date: date,
+    //   });
+    //   if (id) {
+    //     console.log("save weather");
+    //   }
+    // };
+
+    const currentTemp = computed(() => {
+      return weatherCurrently.value.temperature
+        ? weatherCurrently.value.temperature.toFixed(0)
+        : 0;
+    });
+
+    const fahrenheitToCelsius = computed(() => {
+      return (currentTemp.value - 32) * (5 / 9).toFixed(0);
+    });
+
+    return {
+      fahrenheitToCelsius,
+      currentTemp,
+      weatherType,
+      weatherForecast,
+      weatherCurrently,
+    };
   },
 };
 </script>

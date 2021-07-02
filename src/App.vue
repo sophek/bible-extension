@@ -2,11 +2,11 @@
   <div class="wrapper">
     <div class="weather-panel">
       <Clock style="width: 20%" />
-      <Weather />
+      <Weather @ready="setCurrentWeather" />
+      <Favorites style="width: 40%; display: none" :data="data" />
     </div>
     <div style="display: flex">
-      <Favorites style="width: 40%" :data="data" />
-      <Bible style="width: 60%; padding: 30px" @getfavorites="listFavorites" />
+      <Bible style="width: 100%; padding: 30px" @getfavorites="listFavorites" />
     </div>
   </div>
 </template>
@@ -19,6 +19,7 @@ import Favorites from "./components/Favorites.vue";
 import Weather from "./components/Weather.vue";
 export default {
   name: "App",
+  emits: ["ready"],
   components: {
     Clock,
     Bible,
@@ -33,9 +34,14 @@ export default {
     const data = computed(() => {
       return favoritesData.value;
     });
+
+    const setCurrentWeather = (e) => {
+      console.log(e);
+    };
     return {
       listFavorites,
       data,
+      setCurrentWeather,
     };
   },
 };
@@ -45,7 +51,7 @@ export default {
 
 
 #app {
-  height:100vh;
+  min-height:100vh;
   font-family: "Share Tech Mono", monospace;
 }
 
@@ -70,7 +76,7 @@ export default {
     color: white;
     background-color: #00000096;
     width: 100%;
-    height: 100%;
+    min-height: 100vh;
   }
   
   body {

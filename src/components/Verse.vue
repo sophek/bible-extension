@@ -24,6 +24,12 @@
               name="clipboard"
               fill="white"
             ></unicon>
+          </button>
+          <button class="button" :class="toggleButtons ? 'show' : 'hide'">
+            <unicon style="cursor: pointer" name="bright" fill="white"></unicon>
+          </button>
+          <button class="button" :class="toggleButtons ? 'show' : 'hide'">
+            <unicon style="cursor: pointer" name="cloud" fill="white"></unicon>
           </button> </span
         >&nbsp;&nbsp;
       </div>
