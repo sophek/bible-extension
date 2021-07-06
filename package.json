@@ -11,6 +11,8 @@
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
     "dexie": "^3.0.3",
+    "elasticlunr": "^0.9.5",
+    "lunr": "^2.3.9",
     "vue": "^3.0.0",
     "vue-clipboard3": "^1.0.1",
     "vue-unicons": "^3.2.1",
@@ -37,7 +39,9 @@
     "parserOptions": {
       "parser": "babel-eslint"
     },
-    "rules": {}
+    "rules": {
+      "no-unused-vars": "off"
+    }
   },
   "browserslist": [
     "> 1%",

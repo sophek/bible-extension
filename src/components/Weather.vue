@@ -113,7 +113,7 @@ export default {
     });
 
     const fahrenheitToCelsius = computed(() => {
-      return (currentTemp.value - 32) * (5 / 9).toFixed(0);
+      return ((currentTemp.value - 32) * (5 / 9)).toFixed(0);
     });
 
     return {

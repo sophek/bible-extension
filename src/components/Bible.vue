@@ -77,13 +77,16 @@ import { ref, computed, watch } from "vue";
 import useClipboard from "./../../node_modules/vue-clipboard3";
 import db from "./../mydatabase";
 import Verse from "./Verse.vue";
-import { randomNumber, sortBy } from "./../helper";
+import { randomNumber, sortBy,bibleStructure } from "./../helper";
+import elasticlunr from 'elasticlunr'
 export default {
   name: "Bible",
   components: {
     Verse,
   },
   setup(props, { emit }) {
+
+
     const { toClipboard } = useClipboard();
     const verse = ref("");
     const book = ref("");
@@ -94,7 +97,15 @@ export default {
     const rangeText = ref("");
     const favorites = ref([]);
 
-    const importBookOfBible = async (bookName) => {
+    const index = elasticlunr( (lunr) => {
+    lunr.addField('book');
+    lunr.addField('verse');
+    lunr.addField('text');
+    lunr.setRef('id');
+});
+
+
+    const importBooksOfBible = async (bookName) => {
       let book = await import(`./../assets/${bookName}`);
       return book.default();
     };
@@ -121,7 +132,7 @@ export default {
     };
 
     const reloadRandomVerse = () => {
-      console.log("reloadRandomVerse");
+      q.value = ""
       loadRandomBibleVerse();
     };
 
@@ -130,7 +141,7 @@ export default {
       await Promise.all(
         BibleBook.bible.map(async (book) => {
           let bookId = book.BookID;
-          book = await importBookOfBible(book.OsisID);
+          book = await importBooksOfBible(book.OsisID);
           wholeBible.push({ ...book, id: bookId });
         })
       );
@@ -139,7 +150,7 @@ export default {
         .sort(sortBy("id", false, (a) => a))
         .map((book) => {
           return book.chapters.flatMap((chap) => {
-            return chap.verses.map((item) => {
+            return chap.verses.map((item,idx) => {
               return {
                 ...item,
                 book: book.book,
@@ -150,6 +161,12 @@ export default {
           });
         })
         .flat();
+
+      AllBooks.filter((item,idx)=>{
+        let doc = {id:idx,
+        book:item.book,chapter:item.chapter,verse:item.verse,text:item.text}
+        index.addDoc(doc);
+      })
       bibleRef.value = AllBooks;
     };
 
@@ -247,7 +264,7 @@ export default {
         });
       } else {
         if (toVerse === 0) {
-          console.log(book, chapter, fromVerse);
+          
           result = bibleRef.value
             .filter((item) => {
               return item.book.toLowerCase() === book.toLowerCase();
@@ -256,7 +273,7 @@ export default {
               (chapter) => Number(chapter.chapter) === Number(chapterNum)
             );
         } else {
-          console.log(book, chapter, fromVerse, toVerse);
+          
           result = bibleRef.value
             .filter((item) => {
               return item.book.toLowerCase() === book.toLowerCase();
@@ -276,12 +293,7 @@ export default {
     const getMyFavorites = async () => {
       let favs = await db.favorites.toArray();
       favorites.value = favs.map((item) => {
-        return {
-          book: item.book,
-          chapter: Number(item.chapter),
-          verse: Number(item.start_verse),
-          text: item.text,
-        };
+        return bibleStructure(item);
       });
     };
 
@@ -300,16 +312,16 @@ export default {
     // Logic to add favorite, copy etc
 
     const updateFavorite = (e) => {
-      addFavorite(e.book, e.chapter, e.startVerse, e.endVerse, e.text);
+      addFavorite(e.book, e.chapter, e.verse, e.text,e.type);
     };
 
-    const addFavorite = async (book, chapter, start_verse, end_verse, text) => {
+    const addFavorite = async (book, chapter, verse, text,type="FAVORITE") => {
       var id = await db.favorites.put({
         book: book,
         chapter: chapter,
-        start_verse: start_verse,
-        end_verse: end_verse,
+        verse: verse,
         text: text,
+        type:type
       });
       if (id) {
         getMyFavorites();
@@ -317,18 +329,21 @@ export default {
     };
 
     const displayFavorites = (result1, result2) => {
+      console.log({result2:result2})
       return result1.map((o1) => {
         const isFavorite = result2.some(function (o2) {
           const isFav =
-            o1.verse === o2.verse &&
+            Number(o1.verse) === Number(o2.verse) &&
             o1.book === o2.book &&
             o1.chapter === o2.chapter;
+            console.log({displayFavoritesType:o2})
           return isFav;
         });
-        return { ...o1, fav: isFavorite };
+        return { ...o1, fav:isFavorite , type:type };
       });
     };
 
+  // Clipboard Logic
     const copyFrom = (e) => {
       copy(e);
     };
@@ -349,76 +364,66 @@ export default {
         });
 
         await toClipboard(rangeTextData);
-        console.log(rangeTextData);
       } catch (e) {
         console.error(e);
       }
     };
-    // End logic
+    // End Clipboard logic
+
+    watch(type,newValue=>{
+      q.value = ""
+    })
 
     // computed Search result
-
-    const result = computed(() => {
+    const result  = computed(()=>{
       if (q.value === "") {
         return [];
       }
-
+      // Find of the "" is in the query string
       let quotedSearch = q.value.match(/".*?"/g);
-
       if (quotedSearch && quotedSearch.toString().includes('""')) {
         return [];
       }
 
-      //checking if the length is greater than 0
-      //if so, filter through the whole record set and split by each word and match against the search term
-      let byVerseResult =
-        bibleRef.value.length > 0
-          ? bibleRef.value.filter((item) => {
-              let searchByWord = item.text
-                .toLowerCase()
-                .split(" ")
-                .map((i) => i.replace(/\W/g, ""))
-                .includes(q.value.toLowerCase());
-              let searchByPhrase = item.text
-                .toLowerCase()
-                .includes(q.value.toLowerCase().replaceAll('"', "").trim());
-              return quotedSearch ? searchByPhrase : searchByWord;
-            })
-          : [];
+      const cleanFavorites = favorites.value.map((item) => {
+        return bibleStructure(item);
+      })
 
-      // let byBookResult =
-      //   bibleRef.value.length > 0
-      //     ? bibleRef.value.filter((item) =>
-      //         item.full.toLowerCase().includes(q.value.toLowerCase())
-      //       )
-      //     : [];
+      // Favorites
+      
+      
+      let query = q.value.toLowerCase();
 
-      let range = getVerseRange(q.value.toLowerCase());
-
-      let byBookResult = getVerseRangeResult(range);
-
-      let rs = type.value === "verse" ? byVerseResult : byBookResult;
-
-      let cleanFavorites = favorites.value.map((item) => {
-        return {
-          book: item.book,
-          chapter: Number(item.chapter),
-          verse: item.verse,
-          text: item.text,
-        };
+      if(type.value === 'book' && query) {
+        let range = getVerseRange(query);
+        let byBookResult = getVerseRangeResult(range);
+        let cleanResult = byBookResult.map((item) => {
+        return bibleStructure(item);
       });
-      let cleanResult = rs.map((item) => {
-        return {
-          book: item.book,
-          chapter: Number(item.chapter),
-          verse: Number(item.verse),
-          text: item.text,
-          full: item.full,
-        };
+
+        let resultData = displayFavorites(cleanResult, cleanFavorites);
+        return resultData
+      }
+      
+      let resultSet = {index:index.search(query)}
+      
+      const documents = index.documentStore.docs;
+      let docs = resultSet.index.map(i=>{
+          return documents[i.ref]
+        }) 
+
+
+      let cleanResult = docs.map((item) => {
+        return bibleStructure(item);
       });
+
+      console.log({cleanFavorites:cleanFavorites})
+
       let resultData = displayFavorites(cleanResult, cleanFavorites);
-      return resultData;
-    });
+
+      return resultData
+
+    })
 
     return {
       verse,

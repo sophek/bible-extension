@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :style="data.fav ? 'color:red' : ''">
     <div>
       <div>
         <span
@@ -7,12 +7,20 @@
           @mouseover="toggleButtons = true"
           @mouseout="toggleButtons = false"
           >{{ data.book }} {{ data.chapter }} : {{ data.verse }}
-          <button @click="toggleFavorite(data)" class="button">
+      
+          <button @click="toggleFavorite(data,'FAVORITE')" class="button">
             <unicon
               style="cursor: pointer"
               name="heart"
               :fill="data.fav ? 'red' : 'white'"
             ></unicon>
+          </button>
+
+          <button class="button" @click="toggleFavorite(data,'KINGDOM')" :class="toggleButtons ? 'show' : 'hide'">
+            <unicon style="cursor: pointer" name="bright" fill="white"></unicon>
+          </button>
+          <button class="button" @click="toggleFavorite(data,'SALVATION')" :class="toggleButtons ? 'show' : 'hide'">
+            <unicon style="cursor: pointer" name="cloud" fill="white"></unicon>
           </button>
           <button
             @click="copyVerse(data.full)"
@@ -24,12 +32,6 @@
               name="clipboard"
               fill="white"
             ></unicon>
-          </button>
-          <button class="button" :class="toggleButtons ? 'show' : 'hide'">
-            <unicon style="cursor: pointer" name="bright" fill="white"></unicon>
-          </button>
-          <button class="button" :class="toggleButtons ? 'show' : 'hide'">
-            <unicon style="cursor: pointer" name="cloud" fill="white"></unicon>
           </button> </span
         >&nbsp;&nbsp;
       </div>
@@ -54,14 +56,14 @@ export default {
   setup(props, { emit }) {
     const toggleButtons = ref(false);
 
-    const toggleFavorite = (verseData) => {
+    const toggleFavorite = (verseData,type) => {
       console.log("hello");
       emit("favorite", {
         book: verseData.book,
         chapter: verseData.chapter,
-        startVerse: verseData.verse,
-        endVerse: verseData.verse,
+        verse: verseData.verse,
         text: verseData.text,
+        type:type
       });
     };
 
@@ -70,11 +72,16 @@ export default {
     };
 
     const verse = computed(() => {
-      let searchedQ = props.q.toLowerCase().replaceAll('"', "").trim();
-      return props.data.text.replace(
-        searchedQ,
-        `<span style=color:yellow>${searchedQ}</span>`
-      );
+      let pattern = props.q.replaceAll('"', "").trim();
+      const re = new RegExp(pattern, "gi");
+      const string = props.data.text;
+      const replaced = string.replace(re, "<span style=color:yellow>$&</span>");
+      return replaced;
+
+      // return props.data.text.replace(
+      //   searchedQ,
+      //   `<span style=color:yellow>${searchedQ}</span>`
+      // );
     });
 
     return { verse, toggleButtons, toggleFavorite, copyVerse };

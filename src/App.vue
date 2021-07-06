@@ -82,8 +82,8 @@ export default {
   body {
     font-family: "Share Tech Mono", monospace;
     font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
-    background-image: url(https://source.unsplash.com/random?nature);
-    background-size: cover;
+    /* background-image: url(https://source.unsplash.com/random?nature);
+    background-size: cover; */
     background-color: black;
     background-repeat: no-repeat;
     
