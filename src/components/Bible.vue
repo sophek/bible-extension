@@ -77,16 +77,14 @@ import { ref, computed, watch } from "vue";
 import useClipboard from "./../../node_modules/vue-clipboard3";
 import db from "./../mydatabase";
 import Verse from "./Verse.vue";
-import { randomNumber, sortBy,bibleStructure } from "./../helper";
-import elasticlunr from 'elasticlunr'
+import { randomNumber, sortBy, bibleStructure } from "./../helper";
+import elasticlunr from "elasticlunr";
 export default {
   name: "Bible",
   components: {
     Verse,
   },
   setup(props, { emit }) {
-
-
     const { toClipboard } = useClipboard();
     const verse = ref("");
     const book = ref("");
@@ -97,13 +95,12 @@ export default {
     const rangeText = ref("");
     const favorites = ref([]);
 
-    const index = elasticlunr( (lunr) => {
-    lunr.addField('book');
-    lunr.addField('verse');
-    lunr.addField('text');
-    lunr.setRef('id');
-});
-
+    const index = elasticlunr((lunr) => {
+      lunr.addField("book");
+      lunr.addField("verse");
+      lunr.addField("text");
+      lunr.setRef("id");
+    });
 
     const importBooksOfBible = async (bookName) => {
       let book = await import(`./../assets/${bookName}`);
@@ -132,7 +129,7 @@ export default {
     };
 
     const reloadRandomVerse = () => {
-      q.value = ""
+      q.value = "";
       loadRandomBibleVerse();
     };
 
@@ -150,7 +147,7 @@ export default {
         .sort(sortBy("id", false, (a) => a))
         .map((book) => {
           return book.chapters.flatMap((chap) => {
-            return chap.verses.map((item,idx) => {
+            return chap.verses.map((item, idx) => {
               return {
                 ...item,
                 book: book.book,
@@ -162,11 +159,16 @@ export default {
         })
         .flat();
 
-      AllBooks.filter((item,idx)=>{
-        let doc = {id:idx,
-        book:item.book,chapter:item.chapter,verse:item.verse,text:item.text}
+      AllBooks.filter((item, idx) => {
+        let doc = {
+          id: idx,
+          book: item.book,
+          chapter: item.chapter,
+          verse: item.verse,
+          text: item.text,
+        };
         index.addDoc(doc);
-      })
+      });
       bibleRef.value = AllBooks;
     };
 
@@ -264,7 +266,6 @@ export default {
         });
       } else {
         if (toVerse === 0) {
-          
           result = bibleRef.value
             .filter((item) => {
               return item.book.toLowerCase() === book.toLowerCase();
@@ -273,7 +274,6 @@ export default {
               (chapter) => Number(chapter.chapter) === Number(chapterNum)
             );
         } else {
-          
           result = bibleRef.value
             .filter((item) => {
               return item.book.toLowerCase() === book.toLowerCase();
@@ -312,16 +312,22 @@ export default {
     // Logic to add favorite, copy etc
 
     const updateFavorite = (e) => {
-      addFavorite(e.book, e.chapter, e.verse, e.text,e.type);
+      addFavorite(e.book, e.chapter, e.verse, e.text, e.type);
     };
 
-    const addFavorite = async (book, chapter, verse, text,type="FAVORITE") => {
+    const addFavorite = async (
+      book,
+      chapter,
+      verse,
+      text,
+      type = "FAVORITE"
+    ) => {
       var id = await db.favorites.put({
         book: book,
         chapter: chapter,
         verse: verse,
         text: text,
-        type:type
+        type: type,
       });
       if (id) {
         getMyFavorites();
@@ -329,21 +335,30 @@ export default {
     };
 
     const displayFavorites = (result1, result2) => {
-      console.log({result2:result2})
+      let localType;
       return result1.map((o1) => {
         const isFavorite = result2.some(function (o2) {
           const isFav =
             Number(o1.verse) === Number(o2.verse) &&
             o1.book === o2.book &&
             o1.chapter === o2.chapter;
-            console.log({displayFavoritesType:o2})
+          localType = result2.filter(
+            (item) =>
+              Number(item.verse) === Number(o1.verse) &&
+              item.book === o1.book &&
+              item.chapter === o1.chapter
+          );
           return isFav;
         });
-        return { ...o1, fav:isFavorite , type:type };
+        return {
+          ...o1,
+          fav: isFavorite,
+          type: localType.length > 0 ? localType[0].type : "NA",
+        };
       });
     };
 
-  // Clipboard Logic
+    // Clipboard Logic
     const copyFrom = (e) => {
       copy(e);
     };
@@ -370,12 +385,12 @@ export default {
     };
     // End Clipboard logic
 
-    watch(type,newValue=>{
-      q.value = ""
-    })
+    watch(type, (newValue) => {
+      q.value = "";
+    });
 
     // computed Search result
-    const result  = computed(()=>{
+    const result = computed(() => {
       if (q.value === "") {
         return [];
       }
@@ -387,43 +402,40 @@ export default {
 
       const cleanFavorites = favorites.value.map((item) => {
         return bibleStructure(item);
-      })
+      });
 
       // Favorites
-      
-      
+
       let query = q.value.toLowerCase();
 
-      if(type.value === 'book' && query) {
+      if (type.value === "book" && query) {
         let range = getVerseRange(query);
         let byBookResult = getVerseRangeResult(range);
         let cleanResult = byBookResult.map((item) => {
-        return bibleStructure(item);
-      });
+          return bibleStructure(item);
+        });
 
         let resultData = displayFavorites(cleanResult, cleanFavorites);
-        return resultData
+        return resultData;
       }
-      
-      let resultSet = {index:index.search(query)}
-      
-      const documents = index.documentStore.docs;
-      let docs = resultSet.index.map(i=>{
-          return documents[i.ref]
-        }) 
 
+      let resultSet = { index: index.search(query) };
+
+      const documents = index.documentStore.docs;
+      let docs = resultSet.index.map((i) => {
+        return documents[i.ref];
+      });
 
       let cleanResult = docs.map((item) => {
         return bibleStructure(item);
       });
 
-      console.log({cleanFavorites:cleanFavorites})
+      console.log({ cleanFavorites: cleanFavorites });
 
       let resultData = displayFavorites(cleanResult, cleanFavorites);
 
-      return resultData
-
-    })
+      return resultData;
+    });
 
     return {
       verse,

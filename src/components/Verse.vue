@@ -1,5 +1,5 @@
 <template>
-  <div :style="data.fav ? 'color:red' : ''">
+  <div :style="`color:${setColorCoded(data.type)}`">
     <div>
       <div>
         <span
@@ -7,20 +7,24 @@
           @mouseover="toggleButtons = true"
           @mouseout="toggleButtons = false"
           >{{ data.book }} {{ data.chapter }} : {{ data.verse }}
-      
-          <button @click="toggleFavorite(data,'FAVORITE')" class="button">
-            <unicon
-              style="cursor: pointer"
-              name="heart"
-              :fill="data.fav ? 'red' : 'white'"
-            ></unicon>
+
+          <button @click="toggleFavorite(data, 'FAVORITE')" class="button">
+            <unicon style="cursor: pointer" name="heart" fill="yellow"></unicon>
           </button>
 
-          <button class="button" @click="toggleFavorite(data,'KINGDOM')" :class="toggleButtons ? 'show' : 'hide'">
-            <unicon style="cursor: pointer" name="bright" fill="white"></unicon>
+          <button
+            class="button"
+            @click="toggleFavorite(data, 'KINGDOM')"
+            :class="toggleButtons ? 'show' : 'hide'"
+          >
+            <unicon style="cursor: pointer" name="bright" fill="gold"></unicon>
           </button>
-          <button class="button" @click="toggleFavorite(data,'SALVATION')" :class="toggleButtons ? 'show' : 'hide'">
-            <unicon style="cursor: pointer" name="cloud" fill="white"></unicon>
+          <button
+            class="button"
+            @click="toggleFavorite(data, 'SALVATION')"
+            :class="toggleButtons ? 'show' : 'hide'"
+          >
+            <unicon style="cursor: pointer" name="cloud" fill="green"></unicon>
           </button>
           <button
             @click="copyVerse(data.full)"
@@ -56,14 +60,14 @@ export default {
   setup(props, { emit }) {
     const toggleButtons = ref(false);
 
-    const toggleFavorite = (verseData,type) => {
+    const toggleFavorite = (verseData, type) => {
       console.log("hello");
       emit("favorite", {
         book: verseData.book,
         chapter: verseData.chapter,
         verse: verseData.verse,
         text: verseData.text,
-        type:type
+        type: type,
       });
     };
 
@@ -84,7 +88,17 @@ export default {
       // );
     });
 
-    return { verse, toggleButtons, toggleFavorite, copyVerse };
+    const colorCoded = {
+      KINGDOM: "gold",
+      FAVORITE: "yellow",
+      SALVATION: "green",
+      NA: "white",
+    };
+
+    const setColorCoded = (type) => {
+      return colorCoded[type];
+    };
+    return { verse, toggleButtons, toggleFavorite, copyVerse, setColorCoded };
   },
 };
 </script>
