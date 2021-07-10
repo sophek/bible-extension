@@ -1,7 +1,7 @@
 <template>
   <div>
     <carousel>
-      <slide v-for="(slide, idx) in favorites" :key="idx" style="width: 100%">
+      <slide v-for="(slide, idx) in favorites" :key="idx" style="width: 300px">
         <FlashCard>
           <template v-slot:verse>
             <h1 class="hi-lite" style="margin-top: 130px; color: #daf6ff">
@@ -9,7 +9,9 @@
             </h1>
           </template>
           <template v-slot:body>
-            <h3 style="position: relative; top: 100px">{{ slide.text }}</h3>
+            <h3 class="hi-lite" style="position: relative; top: 15%">
+              {{ slide.text }}
+            </h3>
           </template>
         </FlashCard>
       </slide>
@@ -51,6 +53,12 @@ export default {
 .hi-lite{
   text-shadow: 0 0 20px #0aafe6, 0 0 20px rgba(10, 175, 230, 0);
 }
+
+.carousel__viewport {
+  border-radius: 20px;
+  background-color: #000000ad;
+    border: solid 4px #fff;
+}
 .carousel__item {
   min-height: 200px;
   width: 100%;
@@ -64,9 +72,12 @@ export default {
 }
 
 .carousel {
-    width:80%;
-    left:100px;
-    top:-50px;
+    width:300px;
+    left:30px;
+    top:0px;
+    background-image: url(https://source.unsplash.com/featured/?inspiration&w=640&q=60);
+          background-size: cover;
+          border-radius: 20px;
 }
 
 .carousel__slide {
@@ -77,6 +88,7 @@ export default {
 .carousel__next {
   box-sizing: content-box;
   border: 5px solid white;
+  background-color: #000;
 }
 
 .carousel__pagination{

@@ -14,8 +14,11 @@
     "elasticlunr": "^0.9.5",
     "lunr": "^2.3.9",
     "vue": "^3.0.0",
+    "vue-bootstrap-typeahead": "^0.2.6",
     "vue-clipboard3": "^1.0.1",
+    "vue-simple-suggest": "^1.11.1",
     "vue-unicons": "^3.2.1",
+    "vue3-autocomplete": "^1.0.3",
     "vue3-carousel": "^0.1.23"
   },
   "devDependencies": {

@@ -21,6 +21,7 @@ export default {
   background-color: transparent;
   width: 250px;
   height: 300px;
+  border-radius: 20px;
   perspective: 1000px; /* Remove this if you don't want the 3D effect */
 }
 

@@ -1,5 +1,6 @@
 <template>
   <div id="clock">
+    <h1>Good morning</h1>
     <p class="date">{{ date }}</p>
     <p class="time">{{ greetAndConvertTime(time) }}</p>
   </div>
@@ -72,10 +73,8 @@ export default {
   font-family: "Share Tech Mono", monospace;
   color: #ffffff;
   text-align: center;
-  position: relative;
-  left: 40%;
-  top: -40px;
   color: #daf6ff;
+  margin-top: 30%;
   text-shadow: 0 0 20px #0aafe6, 0 0 20px rgba(10, 175, 230, 0);
 }
 #clock .time {

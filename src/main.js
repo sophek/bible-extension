@@ -3,9 +3,9 @@ import debounce from './directives/debouncer'
 import App from './App.vue'
 
 import Unicon from 'vue-unicons'
-import { uniHeart, uniClipboard, uniBright, uniCloud } from 'vue-unicons/dist/icons'
+import { uniHeart, uniClipboard, uniBright, uniCloud, uniAt, uniPhone, uniChat } from 'vue-unicons/dist/icons'
 
-Unicon.add([uniHeart, uniClipboard, uniBright, uniCloud])
+Unicon.add([uniHeart, uniClipboard, uniBright, uniCloud, uniAt, uniPhone, uniChat])
 
 //defining the directive
 const app = createApp(App)

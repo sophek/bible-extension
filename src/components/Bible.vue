@@ -6,24 +6,30 @@
         v-debounce="400"
         class="search-input"
         placeholder="Search the whole KJV Bible..."
-        style="margin-top: 50px; width: 90%"
+        style="margin-top: 50px; width: 50%"
       />
+      <span
+        class="book-tag"
+        style="position: absolute; right: 15%; top: 51px"
+        @click="q = ''"
+        >Clear</span
+      >
     </div>
 
     <div
-      v-if="type === 'book'"
-      style="display: flex; flex-wrap: wrap; margin-top: 20px"
+      v-show="type === 'book' && q.length === 0"
+      style="display: flex; flex-wrap: wrap; margin-top: 20px; padding: 50px"
     >
       <span
         class="book-tag"
         @click="q = book.BookName"
         :key="book.OsisID"
-        v-for="book of BibleBook.bible"
+        v-for="book of listOfBooks"
         >{{ book.BookName }}</span
       >
       <span class="book-tag" @click="q = ''">Clear</span>
     </div>
-    <div style="margin-top: 10px; padding: 20px">
+    <div style="margin-top: 10px; padding: 50px">
       <input type="radio" name="type" value="book" v-model="type" /><span
         >&nbsp;By Books</span
       >
@@ -37,9 +43,17 @@
       <button @click="copyRange" class="result-btn">
         Copy {{ result.length }} Results
       </button>
-      <h3 class="greet hi-lite" v-if="result.length === 0">
-        {{ book }} {{ chapter }} : {{ verse.verse }} - {{ verse.text }}
-      </h3>
+      <br /><br />
+      <p class="greet hi-lite" v-if="result.length === 0">
+        <button
+          class="button-transparent-large"
+          @click="showWholeChapter(book, chapter)"
+        >
+          {{ book }} {{ chapter }}:{{ verse.verse }}
+        </button>
+        {{ verse.text }}
+      </p>
+
       <br />
       <button class="button-transparent">
         <unicon style="cursor: pointer" name="heart" fill="white"></unicon>
@@ -85,6 +99,7 @@ export default {
     Verse,
   },
   setup(props, { emit }) {
+    const query = ref("");
     const { toClipboard } = useClipboard();
     const verse = ref("");
     const book = ref("");
@@ -253,7 +268,6 @@ export default {
     };
 
     const getVerseRangeResult = (range) => {
-      console.log({ range: range });
       let result = [];
       let book = range.book;
       let chapterNum = range.chapter;
@@ -302,6 +316,10 @@ export default {
         JSON.parse
       );
       emit("getfavorites", uniqueArray);
+    });
+
+    watch(q, (newValue) => {
+      emit("clear", newValue.length > 0);
     });
 
     // The order of these function are import because searchBible loads all the books first
@@ -389,6 +407,18 @@ export default {
       q.value = "";
     });
 
+    // Show whole chapter
+    const showWholeChapter = (book, chapter) => {
+      type.value = "book";
+      setTimeout(() => {
+        q.value = book + " " + chapter;
+      }, 500);
+    };
+
+    const listOfBooks = computed(() => {
+      return BibleBook.bible;
+    });
+
     // computed Search result
     const result = computed(() => {
       if (q.value === "") {
@@ -430,8 +460,6 @@ export default {
         return bibleStructure(item);
       });
 
-      console.log({ cleanFavorites: cleanFavorites });
-
       let resultData = displayFavorites(cleanResult, cleanFavorites);
 
       return resultData;
@@ -454,6 +482,8 @@ export default {
       favorites,
       reloadRandomVerse,
       BibleBook,
+      showWholeChapter,
+      listOfBooks,
     };
   },
 };
@@ -492,7 +522,7 @@ ul.verse {
     width: 100%;
     border-radius: 50px;
     background-color: black;
-    border: solid thin #fff;
+    border: solid 4px #fff;
     color: #fff;
     padding: 20px;
     font-size: 2.0rem;
@@ -514,6 +544,16 @@ ul.verse {
     color: #fff;
     border: none;
     cursor:pointer
+  }
+
+  .button-transparent-large{
+    padding: 11px;
+    border-radius: 20px;
+    background-color: transparent;
+    color: #fff;
+    border: none;
+    cursor:pointer;
+    font-size: 32px;
   }
 
   .book-tag{

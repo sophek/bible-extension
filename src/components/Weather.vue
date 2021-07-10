@@ -1,16 +1,28 @@
 <template>
-  <div class="weather-today">
-    <h1>{{ weatherCurrently.summary }}</h1>
-    <h2>{{ currentTemp }}° F / {{ fahrenheitToCelsius }}° C</h2>
-  </div>
-  <div style="display: flex">
-    <div class="day" :key="day" v-for="day in weatherForecast">
-      <WeatherDay
-        :day="day.day"
-        :low="day.low"
-        :high="day.high"
-        :icon="day.icon"
-      />
+  <div
+    style="
+      width: 100%;
+      height: 100%;
+      background-color: #00000094;
+      border-radius: 20px;
+    "
+  >
+    <div class="weather-today">
+      <br />
+      <h1>{{ weatherCurrently.summary }}</h1>
+      <h2>{{ currentTemp }}° F / {{ fahrenheitToCelsius }}° C</h2>
+      <br />
+      <br />
+    </div>
+    <div style="display: flex">
+      <div class="day" :key="day" v-for="day in weatherForecast">
+        <WeatherDay
+          :day="day.day"
+          :low="day.low"
+          :high="day.high"
+          :icon="day.icon"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -153,6 +165,10 @@ export default {
 }
 .weather-panel .temperature > span {
   font-size: 2em;
+}
+
+.weather-today {
+  text-shadow: 0 0 20px #0aafe6, 0 0 20px rgba(10, 175, 230, 0);
 }
 
 </style>

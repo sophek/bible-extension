@@ -1,8 +1,8 @@
 <template>
-  {{ day }} <br />
-  <i :class="`${icon}`" style="margin-top: 10px"></i>
+  <span class="hi-lite">{{ day }}</span> <br />
+  <i :class="`${icon} hi-lite`" style="margin-top: 10px"></i>
   <br />
-  <span>{{ low }}°/{{ high }}°</span>
+  <span style="font-size: 12px">{{ low }}°/{{ high }}°</span>
   <slot></slot>
 </template>
 <script>
@@ -29,3 +29,8 @@ export default {
   setup() {},
 };
 </script>
+<style scoped>
+  .hi-lite {
+    text-shadow: 0 0 20px #0aafe6, 0 0 20px rgba(10, 175, 230, 0);
+  }
+</style>
