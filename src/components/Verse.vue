@@ -27,7 +27,7 @@
             <unicon style="cursor: pointer" name="cloud" fill="green"></unicon>
           </button>
           <button
-            @click="copyVerse(data.full)"
+            @click="copyVerse(data)"
             class="button"
             :class="toggleButtons ? 'show' : 'hide'"
           >
@@ -72,7 +72,9 @@ export default {
     };
 
     const copyVerse = (verseData) => {
-      emit("copy", verseData);
+      console.log({ copyVerse: verseData });
+      const fullText = `${verseData.book} ${verseData.chapter}:${verseData.verse} - ${verseData.text}`;
+      emit("copy", fullText);
     };
 
     const verse = computed(() => {
