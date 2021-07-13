@@ -1,35 +1,39 @@
 <template>
   <div class="wrapper">
-    <div style="display: flex; justify-content: space-around" v-show="!isClear">
-      <Favorites :data="data" />
-      <div class="carousel-clock" style="border: solid 4px #fff"><Clock /></div>
-      <div
-        class="weather-card"
-        :style="`background-image: url(${weatherBackgroundImage})`"
-      >
+    <div
+      class="p-d-flex p-flex-column p-flex-md-row p-jc-between"
+      style="width: 100%"
+    >
+      <Div :padding="0">
+        <Favorites :data="data" />
+      </Div>
+      <Div :padding="0" background="https://source.unsplash.com/random?weather"
+        ><Clock
+      /></Div>
+
+      <Div :padding="0" :background="weatherBackgroundImage">
         <Weather @ready="setCurrentWeather" />
-      </div>
+      </Div>
     </div>
-    <div style="display: flex; justify-content: space-around">
-      <div class="friends-card">
-        <Friend
-          name="Sophek Tounn"
-          :number="4179898029"
-          email="sophek@gmail.com"
+
+    <div
+      class="p-d-flex p-flex-column p-flex-md-row p-jc-between"
+      style="width: 100%; margin-top: 20px"
+    >
+      <Div>
+        <Friends />
+      </Div>
+
+      <Div :padding="0" :h="600">
+        <Bible
+          class="bible-panel"
+          @getfavorites="listFavorites"
+          @clear="setClear"
         />
-        <Friend />
-        <Friend />
-        <Friend />
-        <Friend />
-        <Friend />
-        <Friend />
-        <Friend />
-      </div>
-      <Bible
-        class="bible-panel"
-        @getfavorites="listFavorites"
-        @clear="setClear"
-      />
+      </Div>
+      <Div>
+        <Friends />
+      </Div>
     </div>
   </div>
 </template>
@@ -40,7 +44,8 @@ import Clock from "./components/Clock.vue";
 import Bible from "./components/Bible.vue";
 import Favorites from "./components/Favorites.vue";
 import Weather from "./components/Weather.vue";
-import Friend from "./components/Friend.vue";
+import Friends from "./components/Friends.vue";
+import Div from "./components/Div.vue";
 export default {
   name: "App",
   emits: ["ready"],
@@ -49,7 +54,8 @@ export default {
     Bible,
     Favorites,
     Weather,
-    Friend,
+    Friends,
+    Div,
   },
   setup() {
     const favoritesData = ref([]);
@@ -66,7 +72,9 @@ export default {
 
     const setCurrentWeather = (e) => {
       console.log(e);
-      weatherBackgroundImage.value = `${weatherBackgroundImage.value}${e.summary}`;
+      weatherBackgroundImage.value = `${
+        weatherBackgroundImage.value
+      }${encodeURIComponent(e.summary)}`;
     };
 
     const setClear = (e) => {
@@ -95,7 +103,7 @@ export default {
 
 .bible-panel {
   width: 100%;
-    padding: 0px 30px 0px 30px;
+  padding: 20px;
 }
 
 .weather-card {

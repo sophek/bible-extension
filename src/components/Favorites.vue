@@ -55,9 +55,8 @@ export default {
 }
 
 .carousel__viewport {
-  border-radius: 20px;
-  background-color: #000000ad;
-    border: solid 4px #fff;
+ 
+  /* background-color: #000000ad; */
 }
 .carousel__item {
   min-height: 200px;
@@ -73,11 +72,10 @@ export default {
 
 .carousel {
     width:300px;
-    left:30px;
-    top:0px;
-    background-image: url(https://source.unsplash.com/featured/?inspiration&w=640&q=60);
-          background-size: cover;
-          border-radius: 20px;
+    position: relative;
+    left: 55px;
+    top: -30px;
+    
 }
 
 .carousel__slide {

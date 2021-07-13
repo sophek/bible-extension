@@ -5,6 +5,7 @@
       height: 100%;
       background-color: #00000094;
       border-radius: 20px;
+      padding: 20px;
     "
   >
     <div class="weather-today">

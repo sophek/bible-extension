@@ -74,7 +74,7 @@ export default {
   color: #ffffff;
   text-align: center;
   color: #daf6ff;
-  margin-top: 30%;
+  margin-top: 50px;
   text-shadow: 0 0 20px #0aafe6, 0 0 20px rgba(10, 175, 230, 0);
 }
 #clock .time {

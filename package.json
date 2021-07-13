@@ -13,6 +13,9 @@
     "dexie": "^3.0.3",
     "elasticlunr": "^0.9.5",
     "lunr": "^2.3.9",
+    "primeflex": "^2.0.0",
+    "primeicons": "^4.1.0",
+    "primevue": "^3.5.1",
     "vue": "^3.0.0",
     "vue-bootstrap-typeahead": "^0.2.6",
     "vue-clipboard3": "^1.0.1",
@@ -43,7 +46,8 @@
       "parser": "babel-eslint"
     },
     "rules": {
-      "no-unused-vars": "off"
+      "no-unused-vars": "off",
+      "vue/no-unused-components": "off"
     }
   },
   "browserslist": [

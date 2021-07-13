@@ -6,7 +6,7 @@
         v-debounce="400"
         class="search-input"
         placeholder="Search the whole KJV Bible..."
-        style="margin-top: 50px; width: 50%"
+        style="width: 100%"
       />
       <span
         class="book-tag"
@@ -29,7 +29,7 @@
       >
       <span class="book-tag" @click="q = ''">Clear</span>
     </div>
-    <div style="margin-top: 10px; padding: 50px">
+    <div style="margin-top: 10px; padding: 50px 0px 0px 0px">
       <input type="radio" name="type" value="book" v-model="type" /><span
         >&nbsp;By Books</span
       >
@@ -231,7 +231,7 @@ export default {
 
  
   .greet {
-    font-size: 2.0rem;
+    font-size: 1.25rem;
     font-weight: 400;
     text-shadow: 0 0 20px #0aafe6, 0 0 20px rgba(10, 175, 230, 0);
   }
